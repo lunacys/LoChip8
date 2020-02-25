@@ -1,0 +1,5 @@
+bin/
+obj/
+/packages/
+/.idea/.idea.LoChip8
+/.vs/LoChip8/v16/Server/sqlite3
