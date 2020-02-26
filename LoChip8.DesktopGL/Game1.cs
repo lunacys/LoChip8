@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
@@ -14,6 +15,14 @@ namespace LoChip8.DesktopGL
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
+            
+            VirtualMachine vm = new VirtualMachine(null, null);
+            vm.Initialize();
+            vm.LoadRom("BREAKOUT.ch8");
+            vm.DumpProgramMemory();
+            Console.WriteLine();
+            vm.ProceedCycle();
+            Exit();
         }
 
         protected override void Initialize()
