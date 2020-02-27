@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -18,6 +19,9 @@ namespace LoChip8
         public byte[] Ram => _ram;
         
         private byte[] _registers = new byte[16]; // General-purpose registers Vx (where x is from 0x0 to 0xF)
+
+        public byte[] Registers => _registers;
+        
         private ushort _registerI;
         private ushort _registerPC; // Program Counter
         private byte _registerSP;  // Stack Pointer
@@ -236,7 +240,7 @@ namespace LoChip8
                 );
         }
 
-        private void ProcessInstruction(Instructions instructionEnum, ushort value)
+        public void ProcessInstruction(Instructions instructionEnum, ushort value)
         {
             if (instructionEnum == Instructions.I_0NNN)
             {
@@ -275,10 +279,13 @@ namespace LoChip8
             }
             else if (instructionEnum == Instructions.I_7XNN)
             {
-                // Add the value NN to register VX
+                // Add the value NN to register VX. Overflow (carry) is ignored.
                 var nn = 0x00FF;
                 var register = (value >> 8) & 0x000F;
-                _registers[register] = (byte) nn;
+                unchecked
+                {
+                    _registers[register] += (byte) nn;    
+                }
             }
             else if (instructionEnum == Instructions.I_8XY0)
             {
@@ -459,12 +466,9 @@ namespace LoChip8
 
         public ushort ReadNext()
         {
-            ushort resultInstruction = 0;
-            resultInstruction |= _ram[LoadingAddress + _registerPC++];
-            resultInstruction <<= 8;
-            resultInstruction |= _ram[LoadingAddress + _registerPC++];
+            ushort resultInstruction = (ushort) (_ram[LoadingAddress + _registerPC++] << 8);
 
-            return resultInstruction;
+            return (ushort) (resultInstruction | _ram[LoadingAddress + _registerPC++]);
         }
 
         public int LoadRom(string filename)
@@ -473,20 +477,26 @@ namespace LoChip8
                 throw new InitializationException("Virtual Machine must be initialized before use");
             
             var bufferSize = _ram.Length - LoadingAddress;
-            var memoryOffset = LoadingAddress;
-
+            
             using (FileStream fs = new FileStream(filename, FileMode.Open, FileAccess.Read))
             {
                 using (BinaryReader br = new BinaryReader(fs))
                 {
                     var bytes = br.ReadBytes(bufferSize);
-                    _loadedRomSize = bytes.Length;
                     
-                    foreach (var b in bytes)
-                    {
-                        _ram[memoryOffset++] = b;
-                    }
+                    return LoadRom(bytes);
                 }
+            }
+        }
+
+        public int LoadRom(byte[] romData)
+        {
+            var memoryOffset = LoadingAddress;
+            _loadedRomSize = romData.Length;
+            
+            foreach (var b in romData)
+            {
+                _ram[memoryOffset++] = b;
             }
 
             return _loadedRomSize;
