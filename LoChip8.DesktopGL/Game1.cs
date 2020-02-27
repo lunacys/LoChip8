@@ -16,7 +16,7 @@ namespace LoChip8.DesktopGL
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
             
-            VirtualMachine vm = new VirtualMachine(null, null);
+            VirtualMachine vm = new VirtualMachine(null, null, null);
             vm.Initialize();
             vm.LoadRom("BREAKOUT.ch8");
             vm.DumpProgramMemory();

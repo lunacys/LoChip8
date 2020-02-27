@@ -7,30 +7,31 @@ namespace LoChip8
 {
     public class VirtualMachine
     {
-        public static short LoadingAddress => 0x200;
-        public static short ReservedSpace  => 0x200;
+        public static ushort LoadingAddress => 0x200;
         
         public IBeeper Beeper { get; }
         public IKeyboardProvider Keyboard { get; }
+        public IDisplay Display { get; }
         
         private byte[] _ram = new byte[4096]; // 4096 bytes (4KB)
         
         private byte[] _registers = new byte[16]; // General-purpose registers Vx (where x is from 0x0 to 0xF)
-        private short _registerI;
+        private ushort _registerI;
         private ushort _registerPC; // Program Counter
         private byte _registerSP;  // Stack Pointer
         
-        private short[] _stack = new short[16];
+        private ushort[] _stack = new ushort[16];
 
         private byte _registerDT; // Delay Timer
         private byte _registerST; // Sound Timer
 
         private int _loadedRomSize;
 
-        public VirtualMachine(IBeeper beeper, IKeyboardProvider keyboard)
+        public VirtualMachine(IBeeper beeper, IKeyboardProvider keyboard, IDisplay display)
         {
             Beeper = beeper;
             Keyboard = keyboard;
+            Display = display;
         }
 
         public void Initialize()
@@ -190,7 +191,92 @@ namespace LoChip8
                     break;
             }
             
-            throw new ArgumentOutOfRangeException(nameof(instruction), $"Invalid instruction: {Convert.ToString(instruction, 16)}");
+            throw new ArgumentOutOfRangeException(
+                nameof(instruction), 
+                $"Invalid instruction: {Convert.ToString(instruction, 16).ToUpper().PadLeft(4, '0')} at position {_registerPC}"
+                );
+        }
+
+        private void ProcessInstruction(Instructions instructionEnum, ushort instruction)
+        {
+            switch (instructionEnum)
+            {
+                case Instructions.I_0NNN:
+                    break;
+                case Instructions.I_00E0:
+                    Display.Clear();
+                    break;
+                case Instructions.I_00EE:
+                    break;
+                case Instructions.I_1NNN:
+                    
+                    break;
+                case Instructions.I_2NNN:
+                    break;
+                case Instructions.I_3XNN:
+                    
+                    break;
+                case Instructions.I_4XNN:
+                    break;
+                case Instructions.I_5XY0:
+                    break;
+                case Instructions.I_6XNN:
+                    break;
+                case Instructions.I_7XNN:
+                    break;
+                case Instructions.I_8XY0:
+                    break;
+                case Instructions.I_8XY1:
+                    break;
+                case Instructions.I_8XY2:
+                    break;
+                case Instructions.I_8XY3:
+                    break;
+                case Instructions.I_8XY4:
+                    break;
+                case Instructions.I_8XY5:
+                    break;
+                case Instructions.I_8XY6:
+                    break;
+                case Instructions.I_8XY7:
+                    break;
+                case Instructions.I_8XYE:
+                    break;
+                case Instructions.I_9XY0:
+                    break;
+                case Instructions.I_ANNN:
+                    break;
+                case Instructions.I_BNNN:
+                    break;
+                case Instructions.I_CXNN:
+                    break;
+                case Instructions.I_DXYN:
+                    break;
+                case Instructions.I_EX9E:
+                    break;
+                case Instructions.I_EXA1:
+                    break;
+                case Instructions.I_FX07:
+                    break;
+                case Instructions.I_FX0A:
+                    break;
+                case Instructions.I_FX15:
+                    break;
+                case Instructions.I_FX18:
+                    break;
+                case Instructions.I_FX1E:
+                    break;
+                case Instructions.I_FX29:
+                    break;
+                case Instructions.I_FX33:
+                    break;
+                case Instructions.I_FX55:
+                    break;
+                case Instructions.I_FX65:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(instructionEnum), instructionEnum, null);
+            }
         }
 
         private bool Test(ushort number, ushort mask, ushort expected)
