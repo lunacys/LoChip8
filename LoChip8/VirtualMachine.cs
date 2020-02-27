@@ -280,7 +280,7 @@ namespace LoChip8
             else if (instructionEnum == Instructions.I_7XNN)
             {
                 // Add the value NN to register VX. Overflow (carry) is ignored.
-                var nn = 0x00FF;
+                var nn = value & 0x00FF;
                 var register = (value >> 8) & 0x000F;
                 unchecked
                 {
