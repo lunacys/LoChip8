@@ -10,7 +10,7 @@ namespace LoChip8
         public static ushort LoadingAddress => 0x200;
         
         public IBeeper Beeper { get; }
-        public IKeyboardProvider Keyboard { get; }
+        public Keypad Keypad { get; }
         public IDisplay Display { get; }
         
         private byte[] _ram = new byte[4096]; // 4096 bytes (4KB)
@@ -28,18 +28,28 @@ namespace LoChip8
         private int _loadedRomSize;
 
         private bool _isWaitingForKeyPress = false;
+        
+        private Random _random = new Random();
 
-        public VirtualMachine(IBeeper beeper, IKeyboardProvider keyboard, IDisplay display)
+        public VirtualMachine(IBeeper beeper, Keypad keypad, IDisplay display)
         {
             Beeper = beeper;
-            Keyboard = keyboard;
+            Keypad = keypad;
             Display = display;
+            
+            Keypad.KeySent += KeypadOnKeySent;
+        }
+
+        private void KeypadOnKeySent(object sender, byte key)
+        {
+            throw new NotImplementedException();
         }
 
         public void Initialize()
         {
             var defaultSprites = Sprite.GenerateDefaultSprites();
 
+            // Cleanup
             for (var i = 0; i < _ram.Length; i++)
                 _ram[i] = 0;
             for (var i = 0; i < _registers.Length; i++)
@@ -53,6 +63,7 @@ namespace LoChip8
             _registerDT = 0;
             _registerST = 0;
 
+            // Store default sprites in RAM
             for (int i = 0; i < defaultSprites.Count; i++)
             {
                 var sprite = defaultSprites[i];
@@ -64,6 +75,11 @@ namespace LoChip8
             }
         }
         
+        /// <summary>
+        /// Proceeds a single cycle producing a new frame.
+        /// When the frame changes, timers are updated and the next instruction is processed
+        /// as well as keyboard input. 
+        /// </summary>
         public void ProceedCycle()
         {
             if (_isWaitingForKeyPress)
@@ -84,13 +100,17 @@ namespace LoChip8
             //var instruction = ReadNext();
             //InstructionAsEnum(1);
 
-            for (int i = 0; i < _loadedRomSize / 2; i++)
+            /*for (int i = 0; i < _loadedRomSize / 2; i++)
             {
                 var instr = ReadNext();
                 Console.WriteLine( Convert.ToString(instr, 16).PadLeft(4, '0').ToUpper());
                 var instrEnum = InstructionAsEnum(instr);
                 Console.WriteLine(instrEnum);
-            }
+            }*/
+
+            var instr = ReadNext();
+            var instrEnum = InstructionAsEnum(instr);
+            ProcessInstruction(instrEnum, instr);
 
             // Console.WriteLine(Convert.ToString(instruction, 16));
         }
@@ -204,85 +224,224 @@ namespace LoChip8
                 );
         }
 
-        private void ProcessInstruction(Instructions instructionEnum, ushort instruction)
+        private void ProcessInstruction(Instructions instructionEnum, ushort value)
         {
-            switch (instructionEnum)
+            if (instructionEnum == Instructions.I_0NNN)
             {
-                case Instructions.I_0NNN:
-                    break;
-                case Instructions.I_00E0:
-                    Display.Clear();
-                    break;
-                case Instructions.I_00EE:
-                    break;
-                case Instructions.I_1NNN:
-                    
-                    break;
-                case Instructions.I_2NNN:
-                    break;
-                case Instructions.I_3XNN:
-                    
-                    break;
-                case Instructions.I_4XNN:
-                    break;
-                case Instructions.I_5XY0:
-                    break;
-                case Instructions.I_6XNN:
-                    break;
-                case Instructions.I_7XNN:
-                    break;
-                case Instructions.I_8XY0:
-                    break;
-                case Instructions.I_8XY1:
-                    break;
-                case Instructions.I_8XY2:
-                    break;
-                case Instructions.I_8XY3:
-                    break;
-                case Instructions.I_8XY4:
-                    break;
-                case Instructions.I_8XY5:
-                    break;
-                case Instructions.I_8XY6:
-                    break;
-                case Instructions.I_8XY7:
-                    break;
-                case Instructions.I_8XYE:
-                    break;
-                case Instructions.I_9XY0:
-                    break;
-                case Instructions.I_ANNN:
-                    break;
-                case Instructions.I_BNNN:
-                    break;
-                case Instructions.I_CXNN:
-                    break;
-                case Instructions.I_DXYN:
-                    break;
-                case Instructions.I_EX9E:
-                    break;
-                case Instructions.I_EXA1:
-                    break;
-                case Instructions.I_FX07:
-                    break;
-                case Instructions.I_FX0A:
-                    break;
-                case Instructions.I_FX15:
-                    break;
-                case Instructions.I_FX18:
-                    break;
-                case Instructions.I_FX1E:
-                    break;
-                case Instructions.I_FX29:
-                    break;
-                case Instructions.I_FX33:
-                    break;
-                case Instructions.I_FX55:
-                    break;
-                case Instructions.I_FX65:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(instructionEnum), instructionEnum, null);
+                throw new NotImplementedException("This instruction is highly considered deprecated");
+            }
+            else if (instructionEnum == Instructions.I_00E0)
+            {
+                Display.Clear();
+            }
+            else if (instructionEnum == Instructions.I_00EE)
+            {
+            }
+            else if (instructionEnum == Instructions.I_1NNN)
+            {
+                var address = value & 0x0FFF;
+                _registerPC = (byte) (address); // TODO: Check if not needed to use 'LoadingAddress + address'
+            }
+            else if (instructionEnum == Instructions.I_2NNN)
+            {
+            }
+            else if (instructionEnum == Instructions.I_3XNN)
+            {
+            }
+            else if (instructionEnum == Instructions.I_4XNN)
+            {
+            }
+            else if (instructionEnum == Instructions.I_5XY0)
+            {
+            }
+            else if (instructionEnum == Instructions.I_6XNN)
+            {
+                // Store number NN in register VX
+                var nn = value & 0x00FF;
+                var register = (value >> 8) & 0x000F;
+                _registers[register] = (byte) nn;
+            }
+            else if (instructionEnum == Instructions.I_7XNN)
+            {
+                // Add the value NN to register VX
+                var nn = 0x00FF;
+                var register = (value >> 8) & 0x000F;
+                _registers[register] = (byte) nn;
+            }
+            else if (instructionEnum == Instructions.I_8XY0)
+            {
+                // Store the value of register VY in register VX
+                var rY = (value >> 4) & 0x000F;
+                var rX = (value >> 8) & 0x000F;
+                _registers[rX] = _registers[rY];
+            }
+            else if (instructionEnum == Instructions.I_8XY1)
+            {
+                // Set VX to VX OR VY
+                var regX = (value >> 8) & 0x000F;
+                _registers[regX] = (byte) (_registers[regX] | _registers[(value >> 4) & 0x000F]);
+            }
+            else if (instructionEnum == Instructions.I_8XY2)
+            {
+                // Set VX to VX AND VY
+                var regX = (value >> 8) & 0x000F;
+                _registers[regX] = (byte) (_registers[regX] & _registers[(value >> 4) & 0x000F]);
+            }
+            else if (instructionEnum == Instructions.I_8XY3)
+            {
+                // Set VX to VX XOR VY
+                var regX = (value >> 8) & 0x000F;
+                _registers[regX] = (byte) (_registers[regX] ^ _registers[(value >> 4) & 0x000F]);
+            }
+            else if (instructionEnum == Instructions.I_8XY4)
+            {
+                // Add the value of register VY to register VX
+                // Set VF to 01 if a carry occurs
+                // Set VF to 00 if a carry does not occur
+                var regYValue = _registers[(value >> 4) & 0x000F];
+
+                var regX = (value >> 8) & 0x000F;
+                var regXValue = _registers[regX];
+                
+                if (regXValue + regYValue > byte.MaxValue)
+                {
+                    _registers[regX] = (byte) ((regXValue + regYValue) % 256);
+                    _registers[0xF] = 0x01;
+                }
+                else
+                {
+                    _registers[regX] += regYValue;
+                    _registers[0xF] = 0x00;
+                }
+            }
+            else if (instructionEnum == Instructions.I_8XY5)
+            {
+                // Subtract the value of register VY from register VX
+                // Set VF to 00 if a borrow occurs
+                // Set VF to 01 if a borrow does not occur
+                var regYValue = _registers[(value >> 4) & 0x000F];
+                
+                var regX = (value >> 8) & 0x000F;
+                var regXValue = _registers[regX];
+
+                if (regXValue - regYValue < byte.MinValue)
+                {
+                    _registers[regX] = (byte) ((regXValue - regYValue) % 256);
+                    _registers[0xF] = 0x00;
+                }
+                else
+                {
+                    _registers[regX] -= regYValue;
+                    _registers[0xF] = 0x01;
+                }
+            }
+            else if (instructionEnum == Instructions.I_8XY6)
+            {
+                // Store the value of register VY shifted right one bit in register VX
+                // Set register VF to the least significant bit prior to the shift
+                var yVal = _registers[(value >> 4) & 0x000F];
+                var leastBit = yVal & 0b0000_0001;
+                var yValShifted = yVal >> 1;
+
+                _registers[(value >> 8) & 0x000F] = (byte) yValShifted;
+                _registers[0xF] = (byte) leastBit;
+            }
+            else if (instructionEnum == Instructions.I_8XY7)
+            {
+                // Set register VX to the value of VY minus VX
+                // Set VF to 00 if a borrow occurs
+                // Set VF to 01 if a borrow does not occur
+                var regYValue = _registers[(value >> 4) & 0x000F];
+                
+                var regX = (value >> 8) & 0x000F;
+                var regXValue = _registers[regX];
+
+                if (regYValue - regXValue < byte.MinValue)
+                {
+                    _registers[regX] = (byte) ((regYValue - regXValue) % 256);
+                    _registers[0xF] = 0x00;
+                }
+                else
+                {
+                    _registers[regX] = (byte) (regYValue - regXValue);
+                    _registers[0xF] = 0x01;
+                }
+            }
+            else if (instructionEnum == Instructions.I_8XYE)
+            {
+                // Store the value of register VY shifted left one bit in register VX
+                // Set register VF to the most significant bit prior to the shift
+                var yVal = _registers[(value >> 4) & 0x000F];
+                var mostBit = yVal & 0b1000_0000;
+                var yValShifted = yVal << 1;
+
+                _registers[(value >> 8) & 0x000F] = (byte) yValShifted;
+                _registers[0xF] = (byte) mostBit;
+            }
+            else if (instructionEnum == Instructions.I_9XY0)
+            {
+            }
+            else if (instructionEnum == Instructions.I_ANNN)
+            {
+            }
+            else if (instructionEnum == Instructions.I_BNNN)
+            {
+                var address = value & 0x0FFF;
+                _registerPC = (byte) (address + _registers[0x0]); // TODO: Check if not needed to use 'LoadingAddress + address'
+            }
+            else if (instructionEnum == Instructions.I_CXNN)
+            {
+                // Set VX to a random number with a mask of NN
+                var randomNum = _random.Next(byte.MinValue, byte.MaxValue);
+                var mask = value & 0x00FF;
+
+                _registers[(value >> 8) & 0x000F] = (byte) (randomNum & mask);
+            }
+            else if (instructionEnum == Instructions.I_DXYN)
+            {
+            }
+            else if (instructionEnum == Instructions.I_EX9E)
+            {
+            }
+            else if (instructionEnum == Instructions.I_EXA1)
+            {
+            }
+            else if (instructionEnum == Instructions.I_FX07)
+            {
+                // Store the current value of the delay timer in register VX
+                _registers[(value >> 8) & 0x000F] = _registerDT;
+            }
+            else if (instructionEnum == Instructions.I_FX0A)
+            {
+            }
+            else if (instructionEnum == Instructions.I_FX15)
+            {
+                // Set the delay timer to the value of register VX
+                _registerDT = _registers[(value >> 8) & 0x000F];
+            }
+            else if (instructionEnum == Instructions.I_FX18)
+            {
+                // Set the sound timer to the value of register VX
+                _registerST = _registers[(value >> 8) & 0x000F];
+            }
+            else if (instructionEnum == Instructions.I_FX1E)
+            {
+            }
+            else if (instructionEnum == Instructions.I_FX29)
+            {
+            }
+            else if (instructionEnum == Instructions.I_FX33)
+            {
+            }
+            else if (instructionEnum == Instructions.I_FX55)
+            {
+            }
+            else if (instructionEnum == Instructions.I_FX65)
+            {
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(instructionEnum), instructionEnum, null);
             }
         }
 

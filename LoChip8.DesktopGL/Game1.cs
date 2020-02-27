@@ -5,6 +5,14 @@ using Microsoft.Xna.Framework.Input;
 
 namespace LoChip8.DesktopGL
 {
+    class Beeper : IBeeper
+    {
+        public void Beep()
+        {
+            Console.Beep();
+        }
+    }
+    
     public class Game1 : Game
     {
         GraphicsDeviceManager graphics;
@@ -17,11 +25,14 @@ namespace LoChip8.DesktopGL
             IsMouseVisible = true;
             
             var display = new Display();
+            var keypad = new Keypad();
+            
             Console.WriteLine(display.ToString());
-            VirtualMachine vm = new VirtualMachine(null, null, display);
+            VirtualMachine vm = new VirtualMachine(new Beeper(), keypad, display);
             vm.Initialize();
             vm.LoadRom("BREAKOUT.ch8");
             vm.DumpProgramMemory();
+
             Console.WriteLine();
             vm.ProceedCycle();
             Exit();
