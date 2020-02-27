@@ -14,6 +14,8 @@ namespace LoChip8
         public IDisplay Display { get; }
         
         private byte[] _ram = new byte[4096]; // 4096 bytes (4KB)
+
+        public byte[] Ram => _ram;
         
         private byte[] _registers = new byte[16]; // General-purpose registers Vx (where x is from 0x0 to 0xF)
         private ushort _registerI;
@@ -31,6 +33,8 @@ namespace LoChip8
         
         private Random _random = new Random();
 
+        private bool _isInitialized = false;
+
         public VirtualMachine(IBeeper beeper, Keypad keypad, IDisplay display)
         {
             Beeper = beeper;
@@ -47,6 +51,9 @@ namespace LoChip8
 
         public void Initialize()
         {
+            if (_isInitialized)
+                throw new InitializationException("Virtual Machine is already initialized");
+            
             var defaultSprites = Sprite.GenerateDefaultSprites();
 
             // Cleanup
@@ -73,6 +80,8 @@ namespace LoChip8
                     _ram[i * sprite.Height + j] = sprite.Rows[j];
                 }
             }
+
+            _isInitialized = true;
         }
         
         /// <summary>
@@ -82,6 +91,9 @@ namespace LoChip8
         /// </summary>
         public void ProceedCycle()
         {
+            if (!_isInitialized)
+                throw new InitializationException("Virtual Machine must be initialized before use");
+            
             if (_isWaitingForKeyPress)
             {
                 
@@ -115,7 +127,7 @@ namespace LoChip8
             // Console.WriteLine(Convert.ToString(instruction, 16));
         }
 
-        private Instructions InstructionAsEnum(ushort instruction)
+        public Instructions InstructionAsEnum(ushort instruction)
         {
             const ushort mask = 0xF000;
 
@@ -445,12 +457,7 @@ namespace LoChip8
             }
         }
 
-        private bool Test(ushort number, ushort mask, ushort expected)
-        {
-            return (number & mask) == expected;
-        }
-        
-        private ushort ReadNext()
+        public ushort ReadNext()
         {
             ushort resultInstruction = 0;
             resultInstruction |= _ram[LoadingAddress + _registerPC++];
@@ -460,28 +467,29 @@ namespace LoChip8
             return resultInstruction;
         }
 
-        public void LoadRom(string filename)
+        public int LoadRom(string filename)
         {
+            if (!_isInitialized)
+                throw new InitializationException("Virtual Machine must be initialized before use");
+            
             var bufferSize = _ram.Length - LoadingAddress;
             var memoryOffset = LoadingAddress;
-            int size;
-            
+
             using (FileStream fs = new FileStream(filename, FileMode.Open, FileAccess.Read))
             {
                 using (BinaryReader br = new BinaryReader(fs))
                 {
                     var bytes = br.ReadBytes(bufferSize);
-                    size = bytes.Length;
+                    _loadedRomSize = bytes.Length;
                     
                     foreach (var b in bytes)
                     {
                         _ram[memoryOffset++] = b;
                     }
                 }
-            } 
-            
-            _loadedRomSize = size;
-            Console.WriteLine($"Loaded ROM with size of {size} bytes");
+            }
+
+            return _loadedRomSize;
         }
 
         public void DumpProgramMemory()

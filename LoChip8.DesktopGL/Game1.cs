@@ -30,7 +30,8 @@ namespace LoChip8.DesktopGL
             Console.WriteLine(display.ToString());
             VirtualMachine vm = new VirtualMachine(new Beeper(), keypad, display);
             vm.Initialize();
-            vm.LoadRom("BREAKOUT.ch8");
+            var size = vm.LoadRom("BREAKOUT.ch8");
+            Console.WriteLine($"Loaded ROM with size of {size} bytes");
             vm.DumpProgramMemory();
 
             Console.WriteLine();
