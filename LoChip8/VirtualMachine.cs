@@ -94,9 +94,9 @@ namespace LoChip8
             switch (instruction & mask)
             {
                 case 0x0000:
-                    if ((instruction & 0x0FFF) == 0x00E0)
+                    if ((instruction & 0xFFFF) == 0x00E0)
                         return Instructions.I_00E0;
-                    else if ((instruction & 0x0FFF) == 0x00EE)
+                    else if ((instruction & 0xFFFF) == 0x00EE)
                         return Instructions.I_00EE;
                     else
                         return Instructions.I_0NNN;
@@ -114,7 +114,7 @@ namespace LoChip8
                     return Instructions.I_4XNN;
 
                 case 0x5000:
-                    if ((instruction & 0x000F) == 0x0000)
+                    if ((instruction & 0xF00F) == 0x5000)
                         return Instructions.I_5XY0;
                     break;
                 
@@ -125,27 +125,27 @@ namespace LoChip8
                     return Instructions.I_7XNN;
 
                 case 0x8000:
-                    if ((instruction & 0x000F) == 0x0000)
+                    if ((instruction & 0xF00F) == 0x8000)
                         return Instructions.I_8XY0;
-                    else if ((instruction & 0x000F) == 0x0001)
+                    else if ((instruction & 0xF00F) == 0x8001)
                         return Instructions.I_8XY1;
-                    else if ((instruction & 0x000F) == 0x0002)
+                    else if ((instruction & 0xF00F) == 0x8002)
                         return Instructions.I_8XY2;
-                    else if ((instruction & 0x000F) == 0x0003)
+                    else if ((instruction & 0xF00F) == 0x8003)
                         return Instructions.I_8XY3;
-                    else if ((instruction & 0x000F) == 0x0004)
+                    else if ((instruction & 0xF00F) == 0x8004)
                         return Instructions.I_8XY4;
-                    else if ((instruction & 0x000F) == 0x0005)
+                    else if ((instruction & 0xF00F) == 0x8005)
                         return Instructions.I_8XY5;
-                    else if ((instruction & 0x000F) == 0x0006)
+                    else if ((instruction & 0xF00F) == 0x8006)
                         return Instructions.I_8XY6;
-                    else if ((instruction & 0x000F) == 0x0007)
+                    else if ((instruction & 0xF00F) == 0x8007)
                         return Instructions.I_8XY7;
                     else
                         return Instructions.I_8XYE;
                 
                 case 0x9000:
-                    if ((instruction & 0x000F) == 0x0000)
+                    if ((instruction & 0xF00F) == 0x9000)
                         return Instructions.I_9XY0;
                     break;
 
@@ -162,38 +162,35 @@ namespace LoChip8
                     return Instructions.I_DXYN;
                 
                 case 0xE000:
-                    if ((instruction & 0x00FF) == 0x009E)
+                    if ((instruction & 0xF0FF) == 0xE09E)
                         return Instructions.I_EX9E;
-                    else if ((instruction & 0x00FF) == 0x00A1)
+                    else if ((instruction & 0x00FF) == 0xE0A1)
                         return Instructions.I_EXA1;
                     break;
                 
                 case 0xF000:
-                    if ((instruction & 0x00FF) == 0x0007)
+                    if ((instruction & 0xF0FF) == 0xF007)
                         return Instructions.I_FX07;
-                    else if ((instruction & 0x00FF) == 0x000A)
+                    else if ((instruction & 0xF0FF) == 0xF00A)
                         return Instructions.I_FX0A;
-                    else if ((instruction & 0x00FF) == 0x0015)
+                    else if ((instruction & 0xF0FF) == 0xF015)
                         return Instructions.I_FX15;
-                    else if ((instruction & 0x00FF) == 0x0018)
+                    else if ((instruction & 0xF0FF) == 0xF018)
                         return Instructions.I_FX18;
-                    else if ((instruction & 0x00FF) == 0x001E)
+                    else if ((instruction & 0xF0FF) == 0xF01E)
                         return Instructions.I_FX1E;
-                    else if ((instruction & 0x00FF) == 0x0029)
+                    else if ((instruction & 0xF0FF) == 0xF029)
                         return Instructions.I_FX29;
-                    else if ((instruction & 0x00FF) == 0x0033)
+                    else if ((instruction & 0xF0FF) == 0xF033)
                         return Instructions.I_FX33;
-                    else if ((instruction & 0x00FF) == 0x0055)
+                    else if ((instruction & 0xF0FF) == 0xF055)
                         return Instructions.I_FX55;
-                    else if ((instruction & 0x00FF) == 0x0065)
+                    else if ((instruction & 0xF0FF) == 0xF065)
                         return Instructions.I_FX65;
                     break;
-                
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(instruction), "Invalid instruction");
             }
-
-            return Instructions.I_00E0;
+            
+            throw new ArgumentOutOfRangeException(nameof(instruction), $"Invalid instruction: {Convert.ToString(instruction, 16)}");
         }
 
         private bool Test(ushort number, ushort mask, ushort expected)
