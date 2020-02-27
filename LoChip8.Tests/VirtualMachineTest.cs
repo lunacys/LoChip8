@@ -133,10 +133,11 @@ namespace LoChip8.Tests
         [Test]
         public void Interpretation_Test()
         {
-            byte[] testRom = new byte[]
-            {
+            byte[] testRom = {
                 0x6A, 0x10, // Store number 0x10 in register A
                 0x7B, 0xFF, // Add the value NN to register VX
+                0x6C, 0x1F,
+                0x7C, 0xFF, // Here we check if in case of overflow everything works normally
             };
             
             _vm.Initialize();
@@ -157,8 +158,19 @@ namespace LoChip8.Tests
             Assert.AreEqual(Instructions.I_7XNN, instrAsEnum2);
             
             _vm.ProcessInstruction(instrAsEnum2, instruction2);
-            
+
             Assert.AreEqual(0xFF, _vm.Registers[0xB]);
+            
+            // Check overflow
+            var i3 = _vm.ReadNext();
+            var ie3 = _vm.InstructionAsEnum(i3);
+            _vm.ProcessInstruction(ie3, i3);
+
+            var i4 = _vm.ReadNext();
+            var ie4 = _vm.InstructionAsEnum(i4);
+            Assert.DoesNotThrow(() => { _vm.ProcessInstruction(ie4, i4); });
+            
+            Assert.AreEqual(0x1E, _vm.Registers[0xC]);
         }
 
         private int ConvertBytesToInstruction(byte b1, byte b2)
