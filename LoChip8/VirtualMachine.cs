@@ -27,6 +27,8 @@ namespace LoChip8
 
         private int _loadedRomSize;
 
+        private bool _isWaitingForKeyPress = false;
+
         public VirtualMachine(IBeeper beeper, IKeyboardProvider keyboard, IDisplay display)
         {
             Beeper = beeper;
@@ -64,6 +66,11 @@ namespace LoChip8
         
         public void ProceedCycle()
         {
+            if (_isWaitingForKeyPress)
+            {
+                
+            }
+            
             // 1) Timers
             if (_registerDT > 0)
                 _registerDT -= 1;
