@@ -129,5 +129,41 @@ namespace LoChip8.Tests
                 }
             });
         }
+
+        [Test]
+        public void Interpretation_Test()
+        {
+            byte[] testRom = new byte[]
+            {
+                0x6A, 0x10, // Store number 0x10 in register A
+                0x7B, 0xFF, // Add the value NN to register VX
+            };
+            
+            _vm.Initialize();
+            _vm.LoadRom(testRom);
+
+            var instruction = _vm.ReadNext();
+            Assert.AreEqual(ConvertBytesToInstruction(testRom[0], testRom[1]), instruction);
+            var instrAsEnum = _vm.InstructionAsEnum(instruction);
+            Assert.AreEqual(Instructions.I_6XNN, instrAsEnum);
+
+            _vm.ProcessInstruction(instrAsEnum, instruction);
+            
+            Assert.AreEqual(0x10, _vm.Registers[0xA]);
+            
+            var instruction2 = _vm.ReadNext();
+            Assert.AreEqual(ConvertBytesToInstruction(testRom[2], testRom[3]), instruction2);
+            var instrAsEnum2 = _vm.InstructionAsEnum(instruction2);
+            Assert.AreEqual(Instructions.I_7XNN, instrAsEnum2);
+            
+            _vm.ProcessInstruction(instrAsEnum2, instruction2);
+            
+            Assert.AreEqual(0xFF, _vm.Registers[0xB]);
+        }
+
+        private int ConvertBytesToInstruction(byte b1, byte b2)
+        {
+            return (b1 << 8) | b2;
+        }
     }
 }
