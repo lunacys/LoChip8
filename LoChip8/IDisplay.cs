@@ -11,6 +11,6 @@
         /// <param name="positionX"></param>
         /// <param name="positionY"></param>
         /// <returns>True if any set pixels are changed to unset, and False otherwise</returns>
-        bool DrawSprite(Sprite sprite, int positionX, int positionY);
+        byte DrawSprite(Sprite sprite, int positionX, int positionY);
     }
 }

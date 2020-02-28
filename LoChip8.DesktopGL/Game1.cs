@@ -37,7 +37,7 @@ namespace LoChip8.DesktopGL
             
             graphics.SynchronizeWithVerticalRetrace = false;
             IsFixedTimeStep = true;
-            TargetElapsedTime = TimeSpan.FromSeconds(1d / 1000d);
+            TargetElapsedTime = TimeSpan.FromSeconds(1d / 240d);
             
             // TODO: Make VM run in a separate thread 
             _display = new Display();
@@ -159,7 +159,7 @@ namespace LoChip8.DesktopGL
                     var state = _display.DisplayData[i, j];
                     var drawRect = new Rectangle(256 + j * 8, 8 + i * 8, 8, 8);
 
-                    if (state) // White
+                    if (state == 1) // White
                     {
                         spriteBatch.Draw(_pixel, drawRect, null, Color.White);
                     }

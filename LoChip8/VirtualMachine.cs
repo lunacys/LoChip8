@@ -487,7 +487,7 @@ namespace LoChip8
                 }
                 
                 var sprite = new Sprite(bytes, (byte) n);
-                _registers[0xF] = (byte) (Display.DrawSprite(sprite, vx, vy) ? 1 : 0);
+                _registers[0xF] = Display.DrawSprite(sprite, vx, vy);
             }
             else if (instructionEnum == Instructions.I_EX9E)
             {

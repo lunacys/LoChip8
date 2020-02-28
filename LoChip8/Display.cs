@@ -7,12 +7,12 @@ namespace LoChip8
         public int Width => 64;
         public int Height => 32;
         
-        private bool[,] _displayData;
-        public bool[,] DisplayData => _displayData;
+        private byte[,] _displayData;
+        public byte[,] DisplayData => _displayData;
 
         public Display()
         {
-            _displayData = new bool[Height, Width];
+            _displayData = new byte[Height, Width];
             Clear();
         }
         
@@ -22,15 +22,15 @@ namespace LoChip8
             {
                 for (int j = 0; j < Width; j++)
                 {
-                    _displayData[i, j] = false;
+                    _displayData[i, j] = 0;
                 }
             }
         }
 
         
-        public bool DrawSprite(Sprite sprite, int positionX, int positionY)
+        public byte DrawSprite(Sprite sprite, int positionX, int positionY)
         {
-            bool anyUnset = false;
+            byte anyUnset = 0;
             
             for (int i = 0; i < sprite.Rows.Length; i++)
             {
@@ -43,10 +43,10 @@ namespace LoChip8
                     var posYWrapped = (positionY + i) % Width;
                     var data = _displayData[posYWrapped, posXWrapped];
 
-                    if (data && pixel == 0)
-                        anyUnset = true;
+                    if (data == 1 && pixel == 0)
+                        anyUnset = 1;
                     
-                    _displayData[posYWrapped, posXWrapped] ^= (pixel == 1);
+                    _displayData[posYWrapped, posXWrapped] ^= (byte) pixel;
                 }
             }
 
@@ -61,7 +61,7 @@ namespace LoChip8
             {
                 for (int j = 0; j < Width; j++)
                 {
-                    result += _displayData[i, j] ? '#' : '*';
+                    result += _displayData[i, j];
                 }
 
                 result += "\n";
