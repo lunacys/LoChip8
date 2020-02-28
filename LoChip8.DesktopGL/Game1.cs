@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -17,6 +18,7 @@ namespace LoChip8.DesktopGL
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+        private SpriteFont _debugFont;
 
         public Game1()
         {
@@ -27,7 +29,6 @@ namespace LoChip8.DesktopGL
             var display = new Display();
             var keypad = new Keypad();
             
-            Console.WriteLine(display.ToString());
             VirtualMachine vm = new VirtualMachine(new Beeper(), keypad, display);
             vm.Initialize();
             var size = vm.LoadRom("BREAKOUT.ch8");
@@ -36,7 +37,7 @@ namespace LoChip8.DesktopGL
 
             Console.WriteLine();
             vm.ProceedCycle();
-            Exit();
+            
         }
 
         protected override void Initialize()
@@ -51,6 +52,7 @@ namespace LoChip8.DesktopGL
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
+            _debugFont = Content.Load<SpriteFont>(Path.Combine("Fonts", "DebugFont"));
         }
 
         protected override void Update(GameTime gameTime)
@@ -68,6 +70,9 @@ namespace LoChip8.DesktopGL
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // TODO: Add your drawing code here
+            spriteBatch.Begin();
+            spriteBatch.DrawString(_debugFont, "Hello!", Vector2.One, Color.Red);
+            spriteBatch.End();
 
             base.Draw(gameTime);
         }

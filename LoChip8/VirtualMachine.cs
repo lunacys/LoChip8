@@ -49,12 +49,16 @@ namespace LoChip8
             Keypad = keypad;
             Display = display;
             
-            Keypad.KeySent += KeypadOnKeySent;
+            Keypad.KeyDown += KeypadOnKeyDown;
         }
 
-        private void KeypadOnKeySent(object sender, byte key)
+        private void KeypadOnKeyDown(object sender, byte e)
         {
-            throw new NotImplementedException();
+            if (_isWaitingForKeyPress)
+            {
+                _isWaitingForKeyPress = false;
+                _registers[_registerToStoreKey] = e;
+            }
         }
 
         public void Initialize()
@@ -101,13 +105,7 @@ namespace LoChip8
         {
             if (!_isInitialized)
                 throw new InitializationException("Virtual Machine must be initialized before use");
-            
-            if (_isWaitingForKeyPress)
-            {
-                
-            }
-            
-            // 1) Timers
+
             if (_registerDT > 0)
                 _registerDT -= 1;
 
@@ -117,22 +115,15 @@ namespace LoChip8
                 _registerST -= 1;
             }
             
-            //var instruction = ReadNext();
-            //InstructionAsEnum(1);
-
-            /*for (int i = 0; i < _loadedRomSize / 2; i++)
+            // TODO: Check if halt of the ST and DT registers is needed
+            if (_isWaitingForKeyPress)
             {
-                var instr = ReadNext();
-                Console.WriteLine( Convert.ToString(instr, 16).PadLeft(4, '0').ToUpper());
-                var instrEnum = InstructionAsEnum(instr);
-                Console.WriteLine(instrEnum);
-            }*/
+                return;
+            }
 
             var instr = ReadNext();
             var instrEnum = InstructionAsEnum(instr);
             ProcessInstruction(instrEnum, instr);
-
-            // Console.WriteLine(Convert.ToString(instruction, 16));
         }
 
         public Instructions InstructionAsEnum(ushort instruction)

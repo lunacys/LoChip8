@@ -4,7 +4,8 @@ namespace LoChip8
 {
     public class Keypad
     {
-        public event EventHandler<byte> KeySent;
+        public event EventHandler<byte> KeyDown;
+        public event EventHandler<byte> KeyUp;
         
         private bool[] _pressedKeys;
 
@@ -19,7 +20,10 @@ namespace LoChip8
                 throw new ArgumentException("Only 16 keys mode is supported", nameof(key));
 
             _pressedKeys[key] = isDown;
-            KeySent?.Invoke(this, key);
+            if (isDown)
+                KeyDown?.Invoke(this, key);
+            else
+                KeyUp?.Invoke(this, key);
         }
 
         public bool IsKeyDown(byte key)
