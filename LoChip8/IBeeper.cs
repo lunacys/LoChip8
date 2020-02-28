@@ -2,6 +2,6 @@
 {
     public interface IBeeper
     {
-        void Beep();
+        void Beep(int duration);
     }
 }

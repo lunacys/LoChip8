@@ -11,9 +11,11 @@ namespace LoChip8.DesktopGL
 {
     class Beeper : IBeeper
     {
-        public void Beep()
+        public void Beep(int duration)
         {
             // Console.Beep();
+            Console.WriteLine($"BEEP with duration {duration}ms");
+            Console.Beep(1000, duration);
         }
     }
     
@@ -33,8 +35,8 @@ namespace LoChip8.DesktopGL
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
             
-            //graphics.SynchronizeWithVerticalRetrace = false;
-            //IsFixedTimeStep = false;
+            graphics.SynchronizeWithVerticalRetrace = false;
+            IsFixedTimeStep = false;
             
             // TODO: Make VM run in a separate thread 
             _display = new Display();
@@ -48,7 +50,6 @@ namespace LoChip8.DesktopGL
 
             Console.WriteLine();
             
-            new TaskFactory().StartNew(() => _vm.ProceedCycle());
             // _vm.ProceedCycle();
         }
 
@@ -79,11 +80,11 @@ namespace LoChip8.DesktopGL
                 Exit();
 
             // TODO: Add your update logic here
-            // if (Keyboard.GetState().IsKeyDown(Keys.Space))
+            if (Keyboard.GetState().IsKeyDown(Keys.Space))
             {
                 try
                 {
-                    //_vm.ProceedCycle();
+                    _vm.ProceedCycle();
                 }
                 catch (Exception e)
                 {
@@ -133,6 +134,19 @@ namespace LoChip8.DesktopGL
             spriteBatch.DrawString(_debugFont, $"DT: {ToHexString(_vm.RegisterDT)}", new Vector2(128, 8 + 16 * 3), Color.Black);
             spriteBatch.DrawString(_debugFont, $"ST: {ToHexString(_vm.RegisterST)}", new Vector2(128, 8 + 16 * 4), Color.Black);
 
+            var y = 270;
+            for (int i = 0; i < _vm.LoadedRomSize; i++)
+            {
+                var x = i % 2 == 0 ? 8 + 24 * (i % 32) + 6 : 8 + 24 * (i % 32);
+                if (i % 32 == 0)
+                    y += 20;
+                var pos = new Vector2(x, y);
+
+                var color = _vm.RegisterPC == i || _vm.RegisterPC + 1 == i ? Color.Red : Color.Black;
+                
+                spriteBatch.DrawString(_debugFont, $"{ToHexStringNoPrefix(_vm.Ram[VirtualMachine.LoadingAddress + i])}", pos, color);
+            }
+
             for (int i = 0; i < _display.Height; i++)
             {
                 for (int j = 0; j < _display.Width; j++)
@@ -164,6 +178,11 @@ namespace LoChip8.DesktopGL
         private string ToHexString(ushort value)
         {
             return "0x" + Convert.ToString(value, 16).ToUpper().PadLeft(4, '0');
+        }
+
+        private string ToHexStringNoPrefix(byte value)
+        {
+            return Convert.ToString(value, 16).ToUpper().PadLeft(2, '0');
         }
     }
 }

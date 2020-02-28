@@ -4,7 +4,7 @@ namespace LoChip8.Tests
 {
     public class ConsoleBeeper : IBeeper
     {
-        public void Beep()
+        public void Beep(int duration)
         {
             // Console.Beep();
         }

@@ -117,8 +117,8 @@ namespace LoChip8
 
             if (_registerST > 0)
             {
-                Beeper.Beep();
-                _registerST -= 1;
+                Beeper.Beep(_registerST);
+                _registerST = 0;
             }
             
             // TODO: Check if halt of the ST and DT registers is needed
@@ -259,6 +259,7 @@ namespace LoChip8
             }
             else if (instructionEnum == Instructions.I_1NNN)
             {
+                // Jump to address NNN
                 var address = value & 0x0FFF;
                 _registerPC = (byte) (address);
             }
