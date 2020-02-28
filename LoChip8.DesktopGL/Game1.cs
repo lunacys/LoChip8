@@ -14,7 +14,6 @@ namespace LoChip8.DesktopGL
         public void Beep(int duration)
         {
             // Console.Beep();
-            Console.WriteLine($"BEEP with duration {duration}ms");
             Console.Beep(1000, duration);
         }
     }
@@ -28,6 +27,7 @@ namespace LoChip8.DesktopGL
         private Keypad _keypad;
         private Display _display;
         private Texture2D _pixel;
+        private InputHandler _input;
 
         public Game1()
         {
@@ -36,7 +36,8 @@ namespace LoChip8.DesktopGL
             IsMouseVisible = true;
             
             graphics.SynchronizeWithVerticalRetrace = false;
-            IsFixedTimeStep = false;
+            IsFixedTimeStep = true;
+            TargetElapsedTime = TimeSpan.FromSeconds(1d / 300d);
             
             // TODO: Make VM run in a separate thread 
             _display = new Display();
@@ -44,18 +45,22 @@ namespace LoChip8.DesktopGL
             
             _vm = new VirtualMachine(new Beeper(), _keypad, _display);
             _vm.Initialize();
-            var size = _vm.LoadRom("BREAKOUT.ch8");
+            var size = _vm.LoadRom("BLINKY.ch8");
             Console.WriteLine($"Loaded ROM with size of {size} bytes");
             _vm.DumpProgramMemory();
 
             Console.WriteLine();
-            
+
+            graphics.PreferredBackBufferWidth = 1024;
+            graphics.PreferredBackBufferHeight = 768;
+
             // _vm.ProceedCycle();
         }
 
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
+            _input = new InputHandler(this);
 
             base.Initialize();
         }
@@ -68,7 +73,7 @@ namespace LoChip8.DesktopGL
             _debugFont = Content.Load<SpriteFont>(Path.Combine("Fonts", "DebugFont"));
             
             _pixel = new Texture2D(GraphicsDevice, 1, 1);
-            _pixel.SetData(new Color[]
+            _pixel.SetData(new []
             {
                 Color.White
             });
@@ -76,20 +81,20 @@ namespace LoChip8.DesktopGL
 
         protected override void Update(GameTime gameTime)
         {
+            _input.Update(gameTime);
+            
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-
+            _vm.ProceedCycle();
             // TODO: Add your update logic here
             if (Keyboard.GetState().IsKeyDown(Keys.Space))
             {
-                try
-                {
-                    _vm.ProceedCycle();
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }    
+                _vm.ProceedCycle();
+            }
+
+            if (_input.WasKeyPressed(Keys.Enter))
+            {
+                _vm.ProceedCycle();
             }
 
             var availableKeys = new Keys[]
@@ -164,6 +169,12 @@ namespace LoChip8.DesktopGL
                     }
                 }
             }
+            
+            // Stack
+            for (int i = 0; i < _vm.Stack.Length; i++)
+            {
+                spriteBatch.DrawString(_debugFont, $"S{ToHexStringNoPrefix((byte)i, 1)}: {ToHexString(_vm.Stack[i])}", new Vector2(780, 8 + 16 * i), Color.Black);
+            }
 
             spriteBatch.End();
 
@@ -180,9 +191,9 @@ namespace LoChip8.DesktopGL
             return "0x" + Convert.ToString(value, 16).ToUpper().PadLeft(4, '0');
         }
 
-        private string ToHexStringNoPrefix(byte value)
+        private string ToHexStringNoPrefix(byte value, int padLeft = 2)
         {
-            return Convert.ToString(value, 16).ToUpper().PadLeft(2, '0');
+            return Convert.ToString(value, 16).ToUpper().PadLeft(padLeft, '0');
         }
     }
 }

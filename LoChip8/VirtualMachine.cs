@@ -35,6 +35,8 @@ namespace LoChip8
         
         private ushort[] _stack = new ushort[16];
 
+        public ushort[] Stack => _stack;
+
         private byte _registerDT; // Delay Timer
         private byte _registerST; // Sound Timer
 
@@ -255,7 +257,8 @@ namespace LoChip8
             else if (instructionEnum == Instructions.I_00EE)
             {
                 // Return from a subroutine
-                _registerPC = _stack[_registerSP--];
+                _registerPC = (ushort) (_stack[_registerSP--]);
+                Console.WriteLine();
             }
             else if (instructionEnum == Instructions.I_1NNN)
             {
@@ -266,7 +269,9 @@ namespace LoChip8
             else if (instructionEnum == Instructions.I_2NNN)
             {
                 // Execute subroutine starting at address NNN
-                _registerPC = _stack[_registerSP++];
+                _stack[_registerSP++] = (ushort) (_registerPC);
+                var jumpTo = (value & 0x0FFF);
+                _registerPC = (ushort) (jumpTo - LoadingAddress);
             }
             else if (instructionEnum == Instructions.I_3XNN)
             {
@@ -352,15 +357,18 @@ namespace LoChip8
 
                 var regX = (value >> 8) & 0x000F;
                 var regXValue = _registers[regX];
-                
+
+                unchecked
+                {
+                    _registers[regX] += regYValue;
+                }
+
                 if (regXValue + regYValue > byte.MaxValue)
                 {
-                    _registers[regX] = (byte) ((regXValue + regYValue) % 256);
                     _registers[0xF] = 0x01;
                 }
                 else
                 {
-                    _registers[regX] += regYValue;
                     _registers[0xF] = 0x00;
                 }
             }
@@ -374,14 +382,17 @@ namespace LoChip8
                 var regX = (value >> 8) & 0x000F;
                 var regXValue = _registers[regX];
 
-                if (regXValue - regYValue < byte.MinValue)
+                unchecked
                 {
-                    _registers[regX] = (byte) ((regXValue - regYValue) % 256);
+                    _registers[regX] -= regYValue;    
+                }
+
+                if (regXValue < regYValue)
+                {
                     _registers[0xF] = 0x00;
                 }
                 else
                 {
-                    _registers[regX] -= regYValue;
                     _registers[0xF] = 0x01;
                 }
             }
@@ -406,15 +417,15 @@ namespace LoChip8
                 var regX = (value >> 8) & 0x000F;
                 var regXValue = _registers[regX];
 
-                if (regYValue - regXValue < byte.MinValue)
+                _registers[regX] = (byte) (regYValue - regXValue);
+                
+                if (regYValue > regXValue)
                 {
-                    _registers[regX] = (byte) ((regYValue - regXValue) % 256);
-                    _registers[0xF] = 0x00;
+                    _registers[0xF] = 0x01;
                 }
                 else
                 {
-                    _registers[regX] = (byte) (regYValue - regXValue);
-                    _registers[0xF] = 0x01;
+                    _registers[0xF] = 0x00;
                 }
             }
             else if (instructionEnum == Instructions.I_8XYE)
@@ -543,12 +554,12 @@ namespace LoChip8
                 // I is set to I + X + 1 after operation
                 var reg = (value >> 8) & 0x000F;
                 
-                for (int i = 0; i < reg; i++)
+                for (int i = 0; i <= reg; i++)
                 {
                     _ram[_registerI + i] = _registers[i];
                 }
 
-                _registerI += (byte) (reg + 1);
+                _registerI += (byte) (reg);
             }
             else if (instructionEnum == Instructions.I_FX65)
             {
@@ -556,12 +567,12 @@ namespace LoChip8
                 // I is set to I + X + 1 after operation
                 var reg = (value >> 8) & 0x000F;
 
-                for (int i = 0; i < reg; i++)
+                for (int i = 0; i <= reg; i++)
                 {
                     _registers[i] = _ram[_registerI + i];
                 }
                 
-                _registerI += (byte) (reg + 1);
+                _registerI += (byte) (reg);
             }
             else
             {

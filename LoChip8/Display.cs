@@ -38,14 +38,15 @@ namespace LoChip8
                 
                 for (int j = 0; j < 8; j++)
                 {
-                    // TODO: Move pixels on the other side of the screen if going out of bounds
-                    var pixel = ((row >> j) & 0b0000_0001);
-                    var data = _displayData[positionY + i, positionX + j];
+                    var pixel = (row >> (7 - j)) & 1;
+                    var posXWrapped = (positionX + j) % Width;
+                    var posYWrapped = (positionY + i) % Width;
+                    var data = _displayData[posYWrapped, posXWrapped];
 
-                    if (data)
+                    if (data && pixel == 0)
                         anyUnset = true;
                     
-                    _displayData[positionY + i, positionX + (j % 8)] ^= (pixel == 1);
+                    _displayData[posYWrapped, posXWrapped] ^= (pixel == 1);
                 }
             }
 
