@@ -26,6 +26,10 @@ namespace LoChip8
         private ushort _registerPC; // Program Counter
 
         public ushort RegisterPC => _registerPC;
+        public ushort RegisterI => _registerI;
+        public byte RegisterSP => _registerSP;
+        public byte RegisterDT => _registerDT;
+        public byte RegisterST => _registerST;
         
         private byte _registerSP;  // Stack Pointer
         
@@ -35,6 +39,8 @@ namespace LoChip8
         private byte _registerST; // Sound Timer
 
         private int _loadedRomSize;
+
+        public int LoadedRomSize => _loadedRomSize;
 
         private bool _isWaitingForKeyPress = false;
         private byte _registerToStoreKey;
@@ -203,7 +209,7 @@ namespace LoChip8
                 case 0xE000:
                     if ((instruction & 0xF0FF) == 0xE09E)
                         return Instructions.I_EX9E;
-                    else if ((instruction & 0x00FF) == 0xE0A1)
+                    else if ((instruction & 0xF0FF) == 0xE0A1)
                         return Instructions.I_EXA1;
                     break;
                 
