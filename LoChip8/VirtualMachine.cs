@@ -266,12 +266,36 @@ namespace LoChip8
             }
             else if (instructionEnum == Instructions.I_3XNN)
             {
+                // Skip the following instruction if the value of register VX equals NN
+                var val = value & 0x00FF;
+                var regX = (value >> 8) & 0x000F;
+
+                if (_registers[regX] == val)
+                {
+                    _registerPC += 2;
+                }
             }
             else if (instructionEnum == Instructions.I_4XNN)
             {
+                // Skip the following instruction if the value of register VX is not equal to NN
+                var val = value & 0x00FF;
+                var regX = (value >> 8) & 0x000F;
+
+                if (_registers[regX] != val)
+                {
+                    _registerPC += 2;
+                }
             }
             else if (instructionEnum == Instructions.I_5XY0)
             {
+                // Skip the following instruction if the value of register VX is equal to the value of register VY
+                var regY = (value >> 4) & 0x000F;
+                var regX = (value >> 8) & 0x000F;
+
+                if (_registers[regX] == _registers[regY])
+                {
+                    _registerPC += 2;
+                }
             }
             else if (instructionEnum == Instructions.I_6XNN)
             {
@@ -402,6 +426,14 @@ namespace LoChip8
             }
             else if (instructionEnum == Instructions.I_9XY0)
             {
+                // Skip the following instruction if the value of register VX is not equal to the value of register VY
+                var regY = (value >> 4) & 0x000F;
+                var regX = (value >> 8) & 0x000F;
+
+                if (_registers[regX] != _registers[regY])
+                {
+                    _registerPC += 2;
+                }
             }
             else if (instructionEnum == Instructions.I_ANNN)
             {
