@@ -37,7 +37,7 @@ namespace LoChip8.DesktopGL
             
             graphics.SynchronizeWithVerticalRetrace = false;
             IsFixedTimeStep = true;
-            TargetElapsedTime = TimeSpan.FromSeconds(1d / 300d);
+            TargetElapsedTime = TimeSpan.FromSeconds(1d / 1000d);
             
             // TODO: Make VM run in a separate thread 
             _display = new Display();
@@ -45,7 +45,7 @@ namespace LoChip8.DesktopGL
             
             _vm = new VirtualMachine(new Beeper(), _keypad, _display);
             _vm.Initialize();
-            var size = _vm.LoadRom("BLINKY.ch8");
+            var size = _vm.LoadRom("BREAKOUT.ch8");
             Console.WriteLine($"Loaded ROM with size of {size} bytes");
             _vm.DumpProgramMemory();
 
@@ -85,7 +85,7 @@ namespace LoChip8.DesktopGL
             
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-            _vm.ProceedCycle();
+            // _vm.ProceedCycle();
             // TODO: Add your update logic here
             if (Keyboard.GetState().IsKeyDown(Keys.Space))
             {
@@ -147,7 +147,7 @@ namespace LoChip8.DesktopGL
                     y += 20;
                 var pos = new Vector2(x, y);
 
-                var color = _vm.RegisterPC == i || _vm.RegisterPC + 1 == i ? Color.Red : Color.Black;
+                var color = _vm.RegisterPC - VirtualMachine.LoadingAddress == i || _vm.RegisterPC - VirtualMachine.LoadingAddress + 1 == i ? Color.Red : Color.Black;
                 
                 spriteBatch.DrawString(_debugFont, $"{ToHexStringNoPrefix(_vm.Ram[VirtualMachine.LoadingAddress + i])}", pos, color);
             }

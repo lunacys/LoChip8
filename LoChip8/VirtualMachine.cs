@@ -51,6 +51,8 @@ namespace LoChip8
 
         private bool _isInitialized = false;
 
+        private List<Tuple<ushort, Instructions>> _prevInstructions = new List<Tuple<ushort, Instructions>>();
+
         public VirtualMachine(IBeeper beeper, Keypad keypad, IDisplay display)
         {
             Beeper = beeper;
@@ -85,7 +87,7 @@ namespace LoChip8
                 _stack[i] = 0;
 
             _registerI = 0;
-            _registerPC = 0;
+            _registerPC = LoadingAddress;
             _registerSP = 0;
             _registerDT = 0;
             _registerST = 0;
@@ -131,6 +133,7 @@ namespace LoChip8
 
             var instr = ReadNext();
             var instrEnum = InstructionAsEnum(instr);
+            _prevInstructions.Add(new Tuple<ushort, Instructions>(instr, instrEnum));
             ProcessInstruction(instrEnum, instr);
         }
 
@@ -257,21 +260,20 @@ namespace LoChip8
             else if (instructionEnum == Instructions.I_00EE)
             {
                 // Return from a subroutine
-                _registerPC = (ushort) (_stack[_registerSP--]);
-                Console.WriteLine();
+                _registerPC = _stack[_registerSP--];
             }
             else if (instructionEnum == Instructions.I_1NNN)
             {
                 // Jump to address NNN
                 var address = value & 0x0FFF;
-                _registerPC = (byte) (address);
+                _registerPC = (ushort) address;
             }
             else if (instructionEnum == Instructions.I_2NNN)
             {
                 // Execute subroutine starting at address NNN
-                _stack[_registerSP++] = (ushort) (_registerPC);
+                _stack[++_registerSP] = _registerPC;
                 var jumpTo = (value & 0x0FFF);
-                _registerPC = (ushort) (jumpTo - LoadingAddress);
+                _registerPC = (ushort) jumpTo;
             }
             else if (instructionEnum == Instructions.I_3XNN)
             {
@@ -457,8 +459,9 @@ namespace LoChip8
             }
             else if (instructionEnum == Instructions.I_BNNN)
             {
+                // Jump to address NNN + V0
                 var address = value & 0x0FFF;
-                _registerPC = (byte) (address + _registers[0x0]);
+                _registerPC = (ushort) (address + _registers[0x0]);
             }
             else if (instructionEnum == Instructions.I_CXNN)
             {
@@ -559,7 +562,7 @@ namespace LoChip8
                     _ram[_registerI + i] = _registers[i];
                 }
 
-                _registerI += (byte) (reg);
+                _registerI += (ushort) (reg + 1);
             }
             else if (instructionEnum == Instructions.I_FX65)
             {
@@ -572,7 +575,7 @@ namespace LoChip8
                     _registers[i] = _ram[_registerI + i];
                 }
                 
-                _registerI += (byte) (reg);
+                _registerI += (ushort) (reg + 1);
             }
             else
             {
@@ -582,9 +585,9 @@ namespace LoChip8
 
         public ushort ReadNext()
         {
-            ushort resultInstruction = (ushort) (_ram[LoadingAddress + _registerPC++] << 8);
+            ushort resultInstruction = (ushort) (_ram[_registerPC++] << 8);
 
-            return (ushort) (resultInstruction | _ram[LoadingAddress + _registerPC++]);
+            return (ushort) (resultInstruction | _ram[_registerPC++]);
         }
 
         public int LoadRom(string filename)
