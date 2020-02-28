@@ -247,6 +247,7 @@ namespace LoChip8
         {
             if (instructionEnum == Instructions.I_0NNN)
             {
+                // Execute machine language subroutine at address NNN
                 throw new NotImplementedException("This instruction is highly considered deprecated");
             }
             else if (instructionEnum == Instructions.I_00E0)
@@ -255,6 +256,8 @@ namespace LoChip8
             }
             else if (instructionEnum == Instructions.I_00EE)
             {
+                // Return from a subroutine
+                _registerPC = _stack[_registerSP--];
             }
             else if (instructionEnum == Instructions.I_1NNN)
             {
@@ -263,6 +266,8 @@ namespace LoChip8
             }
             else if (instructionEnum == Instructions.I_2NNN)
             {
+                // Execute subroutine starting at address NNN
+                _registerPC = _stack[_registerSP++];
             }
             else if (instructionEnum == Instructions.I_3XNN)
             {
