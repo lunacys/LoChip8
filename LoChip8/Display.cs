@@ -30,29 +30,26 @@ namespace LoChip8
         
         public bool DrawSprite(Sprite sprite, int positionX, int positionY)
         {
+            bool anyUnset = false;
+            
             for (int i = 0; i < sprite.Rows.Length; i++)
             {
                 var row = sprite.Rows[i];
-
-                /*byte dRow = 0;
-                for (int j = 0; j < 8; j++) // 8 bit
+                
+                for (int j = 0; j < 8; j++)
                 {
-                    dRow |= (byte) (_displayData[positionX + j, positionY + i] ? 1 : 0);
+                    // TODO: Move pixels on the other side of the screen if going out of bounds
+                    var pixel = ((row >> j) & 0b0000_0001);
+                    var data = _displayData[positionY + i, positionX + j];
 
-                    if (i != 7)
-                        dRow <<= 1;
-                }
-
-                var resultRow = row ^ dRow;
-
-                bool[] rRow = new bool[8];*/
-                for (int j = 0; j < Math.Min(8, Width - positionX); j++)
-                {
-                    _displayData[positionY + i, positionX + j] = ((row >> j) & 0b0000_0001) == 1;
+                    if (data)
+                        anyUnset = true;
+                    
+                    _displayData[positionY + i, positionX + (j % 8)] ^= (pixel == 1);
                 }
             }
 
-            return false;
+            return anyUnset;
         }
         
         public override string ToString()
