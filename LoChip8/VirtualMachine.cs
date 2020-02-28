@@ -37,6 +37,7 @@ namespace LoChip8
         private int _loadedRomSize;
 
         private bool _isWaitingForKeyPress = false;
+        private byte _registerToStoreKey;
         
         private Random _random = new Random();
 
@@ -442,6 +443,8 @@ namespace LoChip8
             }
             else if (instructionEnum == Instructions.I_ANNN)
             {
+                // Store memory address NNN in register I
+                _registerI = (ushort) (value & 0x0FFF);
             }
             else if (instructionEnum == Instructions.I_BNNN)
             {
@@ -458,12 +461,39 @@ namespace LoChip8
             }
             else if (instructionEnum == Instructions.I_DXYN)
             {
+                // Draw a sprite at position VX, VY with N bytes of sprite data starting at the address stored in I
+                // Set VF to 01 if any set pixels are changed to unset, and 00 otherwise
+                var vx = _registers[(value >> 8) & 0x000F];
+                var vy = _registers[(value >> 4) & 0x000F];
+                var n = value & 0x000F;
+                
+                byte[] bytes = new byte[n];
+                
+                for (int i = 0; i < n; i++)
+                {
+                    bytes[i] = _ram[_registerI + i];
+                }
+                
+                var sprite = new Sprite(bytes, (byte) n);
+                _registers[0xF] = (byte) (Display.DrawSprite(sprite, vx, vy) ? 1 : 0);
             }
             else if (instructionEnum == Instructions.I_EX9E)
             {
+                // Skip the following instruction if the key corresponding to the hex value currently stored in register VX is pressed
+                var key = _registers[(value >> 8) & 0x000F];
+                if (Keypad.IsKeyDown(key))
+                {
+                    _registerPC += 2;
+                }
             }
             else if (instructionEnum == Instructions.I_EXA1)
             {
+                // Skip the following instruction if the key corresponding to the hex value currently stored in register VX is not pressed
+                var key = _registers[(value >> 8) & 0x000F];
+                if (!Keypad.IsKeyDown(key))
+                {
+                    _registerPC += 2;
+                }
             }
             else if (instructionEnum == Instructions.I_FX07)
             {
@@ -472,6 +502,9 @@ namespace LoChip8
             }
             else if (instructionEnum == Instructions.I_FX0A)
             {
+                // Wait for a keypress and store the result in register VX
+                _isWaitingForKeyPress = true;
+                _registerToStoreKey = (byte) ((value >> 8) & 0x000F);
             }
             else if (instructionEnum == Instructions.I_FX15)
             {
@@ -485,18 +518,52 @@ namespace LoChip8
             }
             else if (instructionEnum == Instructions.I_FX1E)
             {
+                // Add the value stored in register VX to register I
+                _registerI += _registers[(value >> 8) & 0x000F];
             }
             else if (instructionEnum == Instructions.I_FX29)
             {
+                var val = _registers[(value >> 8) & 0x000F];
+                _registerI = GetSymbolAddress(val);
             }
             else if (instructionEnum == Instructions.I_FX33)
             {
+                // Store the binary-coded decimal equivalent of the value stored in register VX at addresses I, I+1, and I+2
+                byte val = _registers[(value >> 8) & 0x000F];
+                var hundreds = val / 100;
+                val %= 100;
+                var tens = val / 10;
+                val %= 10;
+
+                _ram[_registerI] = (byte) hundreds;
+                _ram[_registerI + 1] = (byte) tens;
+                _ram[_registerI + 2] = (byte) val;
             }
             else if (instructionEnum == Instructions.I_FX55)
             {
+                // Store the values of registers V0 to VX inclusive in memory starting at address I
+                // I is set to I + X + 1 after operation
+                var reg = (value >> 8) & 0x000F;
+                
+                for (int i = 0; i < reg; i++)
+                {
+                    _ram[_registerI + i] = _registers[i];
+                }
+
+                _registerI += (byte) (reg + 1);
             }
             else if (instructionEnum == Instructions.I_FX65)
             {
+                // Fill registers V0 to VX inclusive with the values stored in memory starting at address I
+                // I is set to I + X + 1 after operation
+                var reg = (value >> 8) & 0x000F;
+
+                for (int i = 0; i < reg; i++)
+                {
+                    _registers[i] = _ram[_registerI + i];
+                }
+                
+                _registerI += (byte) (reg + 1);
             }
             else
             {
@@ -557,6 +624,13 @@ namespace LoChip8
             }
 
             Console.WriteLine();
+        }
+
+        public ushort GetSymbolAddress(byte symbol)
+        {
+            // As the sprite data is stored starting form 0x0000 and it has size of 5 bytes,
+            // return symbol * 5 (0xF - 15, address is 15 * 5 = 75 or 0x4B)
+            return (ushort) (symbol * 5);
         }
     }
 }

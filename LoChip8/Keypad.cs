@@ -21,5 +21,10 @@ namespace LoChip8
             _pressedKeys[key] = isDown;
             KeySent?.Invoke(this, key);
         }
+
+        public bool IsKeyDown(byte key)
+        {
+            return _pressedKeys[key];
+        }
     }
 }

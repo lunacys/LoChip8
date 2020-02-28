@@ -26,6 +26,12 @@ namespace LoChip8
                 }
             }
         }
+
+        
+        public bool DrawSprite(Sprite sprite, int positionX, int positionY)
+        {
+            throw new NotImplementedException();
+        }
         
         public override string ToString()
         {
