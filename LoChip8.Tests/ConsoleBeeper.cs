@@ -6,7 +6,7 @@ namespace LoChip8.Tests
     {
         public void Beep()
         {
-            Console.Beep();
+            // Console.Beep();
         }
     }
 }
