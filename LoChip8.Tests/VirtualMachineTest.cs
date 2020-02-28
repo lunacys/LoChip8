@@ -138,6 +138,7 @@ namespace LoChip8.Tests
                 0x7B, 0xFF, // Add the value NN to register VX
                 0x6C, 0x1F,
                 0x7C, 0xFF, // Here we check if in case of overflow everything works normally
+                0x10, 0x00, // Jump to the beginning of the program
             };
             
             _vm.Initialize();
@@ -171,6 +172,32 @@ namespace LoChip8.Tests
             Assert.DoesNotThrow(() => { _vm.ProcessInstruction(ie4, i4); });
             
             Assert.AreEqual(0x1E, _vm.Registers[0xC]);
+            
+            // Test jump
+            var i5 = _vm.ReadNext();
+            var i5e = _vm.InstructionAsEnum(i5);
+            Assert.AreEqual(Instructions.I_1NNN, i5e);
+            _vm.ProcessInstruction(i5e, i5);
+            Assert.AreEqual(0x0000, _vm.RegisterPC);
+            
+            // Test the first two instructions
+            instruction = _vm.ReadNext();
+            Assert.AreEqual(ConvertBytesToInstruction(testRom[0], testRom[1]), instruction);
+            instrAsEnum = _vm.InstructionAsEnum(instruction);
+            Assert.AreEqual(Instructions.I_6XNN, instrAsEnum);
+
+            _vm.ProcessInstruction(instrAsEnum, instruction);
+            
+            Assert.AreEqual(0x10, _vm.Registers[0xA]);
+            
+            instruction2 = _vm.ReadNext();
+            Assert.AreEqual(ConvertBytesToInstruction(testRom[2], testRom[3]), instruction2);
+            instrAsEnum2 = _vm.InstructionAsEnum(instruction2);
+            Assert.AreEqual(Instructions.I_7XNN, instrAsEnum2);
+            
+            _vm.ProcessInstruction(instrAsEnum2, instruction2); // Here goes an overflow (0xFF + 0xFF)
+            
+            Assert.AreEqual(0xFE, _vm.Registers[0xB]);
         }
 
         private int ConvertBytesToInstruction(byte b1, byte b2)

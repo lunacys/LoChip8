@@ -24,6 +24,9 @@ namespace LoChip8
         
         private ushort _registerI;
         private ushort _registerPC; // Program Counter
+
+        public ushort RegisterPC => _registerPC;
+        
         private byte _registerSP;  // Stack Pointer
         
         private ushort[] _stack = new ushort[16];
@@ -256,7 +259,7 @@ namespace LoChip8
             else if (instructionEnum == Instructions.I_1NNN)
             {
                 var address = value & 0x0FFF;
-                _registerPC = (byte) (address); // TODO: Check if not needed to use 'LoadingAddress + address'
+                _registerPC = (byte) (address);
             }
             else if (instructionEnum == Instructions.I_2NNN)
             {
@@ -406,7 +409,7 @@ namespace LoChip8
             else if (instructionEnum == Instructions.I_BNNN)
             {
                 var address = value & 0x0FFF;
-                _registerPC = (byte) (address + _registers[0x0]); // TODO: Check if not needed to use 'LoadingAddress + address'
+                _registerPC = (byte) (address + _registers[0x0]);
             }
             else if (instructionEnum == Instructions.I_CXNN)
             {
