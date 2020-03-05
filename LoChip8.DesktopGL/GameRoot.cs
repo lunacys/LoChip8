@@ -19,7 +19,7 @@ namespace LoChip8.DesktopGL
         }
     }
     
-    public class Game1 : Game
+    public class GameRoot : Game
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
@@ -29,7 +29,7 @@ namespace LoChip8.DesktopGL
         private Display _display;
         private Texture2D _pixel;
         private InputHandler _input;
-        
+
         private Keys[] availableKeys => new Keys[]
         {
             Keys.D1, Keys.D2, Keys.D3, Keys.D4,
@@ -38,7 +38,7 @@ namespace LoChip8.DesktopGL
             Keys.Z, Keys.X, Keys.C, Keys.V
         };
 
-        public Game1()
+        public GameRoot()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
