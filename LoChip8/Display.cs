@@ -40,9 +40,11 @@ namespace LoChip8
                 {
                     if ((row & (0x80 >> x)) != 0)
                     {
-                        if (_displayData[positionY + y, positionX + x] == 1)
+                        var xWrapped = (positionX + x) % Width;
+                        var yWrapped = (positionY + y) % Height;
+                        if (_displayData[yWrapped, xWrapped] == 1)
                             anyUnset = 1;
-                        _displayData[positionY + y, positionX + x] ^= 1;
+                        _displayData[yWrapped, xWrapped] ^= 1;
                     }
                 }
             }
