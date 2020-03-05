@@ -30,44 +30,24 @@ namespace LoChip8
         
         public byte DrawSprite(Sprite sprite, int positionX, int positionY)
         {
-            byte anyUnset = 0;
+            int anyUnset = 0;
             
-            for (int i = 0; i < sprite.Rows.Length; i++)
+            var height = sprite.Height;
+            for (int y = 0; y < height; y++)
             {
-                var row = sprite.Rows[i];
-                
-                for (int j = 0; j < 8; j++)
+                var row = sprite.Rows[y];
+                for (int x = 0; x < 8; x++)
                 {
-                    var pixel = (row >> (7 - j)) & 1;
-                    var posXWrapped = (positionX + j) % Width;
-                    var posYWrapped = (positionY + i) % Width;
-                    var data = _displayData[posYWrapped, posXWrapped];
-
-                    if (data == 1 && pixel == 0)
-                        anyUnset = 1;
-                    
-                    _displayData[posYWrapped, posXWrapped] ^= (byte) pixel;
+                    if ((row & (0x80 >> x)) != 0)
+                    {
+                        if (_displayData[positionY + y, positionX + x] == 1)
+                            anyUnset = 1;
+                        _displayData[positionY + y, positionX + x] ^= 1;
+                    }
                 }
             }
 
-            return anyUnset;
-        }
-        
-        public override string ToString()
-        {
-            var result = "";
-
-            for (int i = 0; i < Height; i++)
-            {
-                for (int j = 0; j < Width; j++)
-                {
-                    result += _displayData[i, j];
-                }
-
-                result += "\n";
-            }
-
-            return result;
+            return (byte) anyUnset;
         }
     }
 }
