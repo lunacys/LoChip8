@@ -9,6 +9,8 @@ namespace LoChip8
         
         private bool[] _pressedKeys;
 
+        public bool[] PressedKeys => _pressedKeys;
+
         public Keypad()
         {
             _pressedKeys = new bool[16];
