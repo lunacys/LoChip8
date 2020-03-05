@@ -59,6 +59,21 @@ namespace LoChip8
 
             _isInitialized = true;
         }
+
+        public void DelayTimerTick()
+        {
+            if (Cpu.RegisterDT > 0)
+                Cpu.RegisterDT -= 1;
+        }
+
+        public void SoundTimerTick()
+        {
+            if (Cpu.RegisterST > 0)
+            {
+                Beeper.Beep(Cpu.RegisterST);
+                Cpu.RegisterST = 0;
+            }
+        }
         
         /// <summary>
         /// Proceeds a single cycle producing a new frame.
@@ -70,16 +85,6 @@ namespace LoChip8
             if (!_isInitialized)
                 throw new InitializationException("Virtual Machine must be initialized before use");
 
-            if (Cpu.RegisterDT > 0)
-                Cpu.RegisterDT -= 1;
-
-            if (Cpu.RegisterST > 0)
-            {
-                Beeper.Beep(Cpu.RegisterST);
-                Cpu.RegisterST = 0;
-            }
-            
-            // TODO: Check if halt of the ST and DT registers is needed
             if (Cpu.IsWaitingForKey)
             {
                 return;

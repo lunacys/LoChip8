@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using LoChip8.DesktopGL.GameTimers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -29,6 +30,8 @@ namespace LoChip8.DesktopGL
         private Display _display;
         private Texture2D _pixel;
         private InputHandler _input;
+        private GameTimer _delayTimer;
+        private GameTimer _soundTimer;
 
         private Keys[] availableKeys => new Keys[]
         {
@@ -45,8 +48,8 @@ namespace LoChip8.DesktopGL
             IsMouseVisible = true;
             
             graphics.SynchronizeWithVerticalRetrace = false;
-            IsFixedTimeStep = true;
-            TargetElapsedTime = TimeSpan.FromSeconds(1d / 240d);
+            IsFixedTimeStep = false;
+            //TargetElapsedTime = TimeSpan.FromSeconds(1d / 240d);
             
             // TODO: Make VM run in a separate thread 
             _display = new Display();
@@ -54,6 +57,9 @@ namespace LoChip8.DesktopGL
             
             _vm = new VirtualMachine(new Beeper(), _keypad, _display, "BREAKOUT.ch8");
             _vm.Initialize();
+            
+            _delayTimer = new GameTimer(1 / 60d, true, (sender, args) => _vm.DelayTimerTick());
+            _soundTimer = new GameTimer(1 / 60d, true, (sender, args) => _vm.SoundTimerTick());
 
             graphics.PreferredBackBufferWidth = 1024;
             graphics.PreferredBackBufferHeight = 768;
@@ -87,9 +93,12 @@ namespace LoChip8.DesktopGL
         {
             _input.Update(gameTime);
             
+            _delayTimer.Update(gameTime);
+            _soundTimer.Update(gameTime);
+            
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-            // _vm.ProceedCycle();
+            _vm.ProceedCycle();
             // TODO: Add your update logic here
             if (Keyboard.GetState().IsKeyDown(Keys.Space))
             {

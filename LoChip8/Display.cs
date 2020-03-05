@@ -38,7 +38,7 @@ namespace LoChip8
                 var row = sprite.Rows[y];
                 for (int x = 0; x < 8; x++)
                 {
-                    if ((row & (0x80 >> x)) != 0)
+                    if ((row & (0b1000_0000 >> x)) != 0)
                     {
                         var xWrapped = (positionX + x) % Width;
                         var yWrapped = (positionY + y) % Height;
