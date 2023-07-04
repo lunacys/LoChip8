@@ -48,8 +48,8 @@ namespace LoChip8.DesktopGL
             IsMouseVisible = true;
             
             graphics.SynchronizeWithVerticalRetrace = false;
-            IsFixedTimeStep = false;
-            //TargetElapsedTime = TimeSpan.FromSeconds(1d / 240d);
+            IsFixedTimeStep = true;
+            TargetElapsedTime = TimeSpan.FromSeconds(1d / 240d);
             
             // TODO: Make VM run in a separate thread 
             _display = new Display();

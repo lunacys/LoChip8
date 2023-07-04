@@ -1,0 +1,78 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+    <PublishAot>true</PublishAot>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RdXmlFile Include="rd.xml" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(OS)' != 'Windows_NT'">
+    <NativeLibrary Include="-lSDL2" />
+    <NativeLibrary Include="-lFNA3D" />
+    <NativeLibrary Include="-lFAudio" />
+    <NativeLibrary Include="-ltheorafile" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
+    <NativeLibrary Include="SDL2.lib" />
+    <NativeLibrary Include="FNA3D.lib" />
+    <NativeLibrary Include="FAudio.lib" />
+    <NativeLibrary Include="libtheorafile.lib" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <DirectPInvokeList Include="SDLApis.txt" />
+    <DirectPInvoke Include="FNA3D" />
+    <DirectPInvoke Include="FAudio" />
+    <DirectPInvoke Include="libtheorafile" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Content/**/*.*" Exclude="**/*.fx; Content/Content-Goes-Here.txt; **/*.mgcb; **/.vscode/**/*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <IsOSX Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' == 'true'">true</IsOSX>
+    <IsLinux Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' == 'true'">true</IsLinux>
+  </PropertyGroup>
+
+  <!-- Copy fnalib directories to output -->
+  <ItemGroup>
+    <Content Include="..\fnalibs\x64\**\*.*" Visible="false" Condition="'$(OS)' == 'Windows_NT' AND '$(Platform)' != 'x86'">
+      <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\fnalibs\osx\**\*.*" Visible="false" Condition="'$(OS)' != 'Windows_NT' AND $(IsOSX) == 'true'">
+      <Link>osx\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\fnalibs\lib\**\*.*" Visible="false" Condition="'$(OS)' != 'Windows_NT' AND $(IsLinux) == 'true'">
+      <Link>lib\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\fnalibs\lib64\**\*.*" Visible="false" Condition="'$(OS)' != 'Windows_NT' AND $(IsLinux) == 'true'">
+      <Link>lib64\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\FNA\FNA.Core.csproj" />
+    <ProjectReference Include="..\..\Nez\Nez.ImGui\Nez.FNA.Standard.ImGui.csproj" />
+    <ProjectReference Include="..\..\Nez\Nez.Persistence\Nez.FNA.Standard.Persistence.csproj" />
+    <ProjectReference Include="..\..\Nez\Nez.Portable\Nez.FNA.Standard.csproj" />
+    <ProjectReference Include="..\LiteLog\LiteLog.csproj" />
+    <ProjectReference Include="..\LoChip8\LoChip8.csproj" />
+  </ItemGroup>
+
+</Project>
