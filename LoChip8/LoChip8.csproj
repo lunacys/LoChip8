@@ -2,7 +2,35 @@
 
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>
+        <PublishAot>true</PublishAot>
     </PropertyGroup>
+
+    <ItemGroup>
+        <RdXmlFile Include="rd.xml" />
+    </ItemGroup>
+
+      <ItemGroup Condition="'$(OS)' != 'Windows_NT'">
+        <NativeLibrary Include="-lSDL2" />
+        <NativeLibrary Include="-lFNA3D" />
+        <NativeLibrary Include="-lFAudio" />
+        <NativeLibrary Include="-ltheorafile" />
+      </ItemGroup>
+
+      <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
+        <NativeLibrary Include="SDL2.lib" />
+        <NativeLibrary Include="FNA3D.lib" />
+        <NativeLibrary Include="FAudio.lib" />
+        <NativeLibrary Include="libtheorafile.lib" />
+      </ItemGroup>
+
+      <ItemGroup>
+        <DirectPInvokeList Include="SDLApis.txt" />
+        <DirectPInvoke Include="FNA3D" />
+        <DirectPInvoke Include="FAudio" />
+        <DirectPInvoke Include="libtheorafile" />
+      </ItemGroup>
+
+
 
     <ItemGroup>
       <ProjectReference Include="..\LiteLog\LiteLog.csproj" />

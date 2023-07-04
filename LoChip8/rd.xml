@@ -1,0 +1,25 @@
+<Directives>
+	<Application>
+		<Assembly Name="FNA">
+			<Type Name="Microsoft.Xna.Framework.Content.ContentReader" Dynamic="Required All"/>
+			<Type Name="Microsoft.Xna.Framework.Content.Texture2DReader" Dynamic="Required All"/>
+			<Type Name="Microsoft.Xna.Framework.Graphics.GraphicsDevice" Dynamic="Required All">
+				<Method Name="AddResourceReference" />
+				<Method Name="RemoveResourceReference" />
+			</Type>
+			<Type Name="Microsoft.Xna.Framework.Content.ContentManager" Dynamic="Required All" MarshalStructure="Required All"/>
+		</Assembly>
+		<Assembly Name="mscorlib" />
+		<Assembly Name="Nez">
+			<Type Name="Nez.BitmapFonts.BitmapFont" Dynamic="Required All" />
+			<Type Name="Nez.BitmapFonts.BitmapFontReader" Dynamic="Required All" MarshalStructure="Required All" />
+		</Assembly>
+		<Assembly Name="Nez.Persistence" />
+		<Assembly Name="lunge.Library.Particles">
+			<Type Name="lunge.Library.Particles.Modifiers.Modifier" Dynamic="Required All" MarshalStructure="Required All" />
+		</Assembly>
+		<Assembly Name="LoChip8">
+			<!--<Type Name="BossRushJam.TestSettings" Dynamic="Required All" MarshalStructure="Required All" />-->
+		</Assembly>
+	</Application>
+</Directives>
