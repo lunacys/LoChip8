@@ -34,8 +34,8 @@ public class GameRoot : Core
         var imGuiManager = new ImGuiManager();
         imGuiManager.ShowCoreWindow = true;
         imGuiManager.ShowDemoWindow = false;
-        imGuiManager.ShowMenuBar = true;
-        imGuiManager.ShowSceneGraphWindow = true;
+        imGuiManager.ShowMenuBar = false;
+        imGuiManager.ShowSceneGraphWindow = false;
         imGuiManager.ShowSeperateGameWindow = false;
         imGuiManager.ShowStyleEditor = false;
         RegisterGlobalManager(imGuiManager);
@@ -53,7 +53,7 @@ public class GameRoot : Core
         _logger.Debug("Setting up scene");
         try
         {
-            Scene = new TestScene();
+            Scene = new MainScene();
         }
         catch (Exception e)
         {
