@@ -2,12 +2,14 @@ namespace LoChip8;
 
 public class Display
 {
+    public event EventHandler? Changed; 
+    
     public int Width => 64;
     public int Height => 32;
 
     private readonly byte[] _data;
 
-    public IEnumerable<byte> Data => _data;
+    public byte[] Data => _data;
 
     public Display()
     {
@@ -45,6 +47,8 @@ public class Display
                 }
             }
         }
+        
+        Changed?.Invoke(this, EventArgs.Empty);
 
         return collision;
     }

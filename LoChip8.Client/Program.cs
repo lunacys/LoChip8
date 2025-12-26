@@ -1,4 +1,5 @@
 ﻿using ImGuiNET;
+using LoChip8.Client.Ui;
 using LoChip8.Logging;
 using Raylib_cs;
 using rlImGui_cs;
@@ -9,10 +10,18 @@ public static class Program
 {
     public const int WindowWidth = 1280;
     public const int WindowHeight = 720;
+
+    private static readonly KeyboardKey[] _keypadKeys =
+    [
+        KeyboardKey.One, KeyboardKey.Two, KeyboardKey.Three, KeyboardKey.Four,
+        KeyboardKey.Q, KeyboardKey.W, KeyboardKey.E, KeyboardKey.R,
+        KeyboardKey.A, KeyboardKey.S, KeyboardKey.D, KeyboardKey.F,
+        KeyboardKey.Z, KeyboardKey.X, KeyboardKey.C, KeyboardKey.V
+    ]; 
     
     static void Main(string[] args)
     {
-        Raylib.SetConfigFlags(ConfigFlags.VSyncHint | ConfigFlags.ResizableWindow | ConfigFlags.MaximizedWindow);
+        Raylib.SetConfigFlags( ConfigFlags.ResizableWindow | ConfigFlags.MaximizedWindow);
         Raylib.InitWindow(WindowWidth, WindowHeight, "LoChip8");
         Raylib.SetWindowMinSize(WindowWidth, WindowHeight);
         Raylib.SetTargetFPS(60);
@@ -39,18 +48,42 @@ public static class Program
         var style = ImGui.GetStyle();
         style.ScaleAllSizes(dpi.X);
 
+        var mainFont = Raylib.LoadFont("Content/Fonts/FiraCode-Regular.ttf");
+
+        var interpreter = new Interpreter();
+        interpreter.Ram.LoadRom("Content/ROMs/games/Space Invaders [David Winter].ch8");
+
+        var gameScreen = new GameScreen(interpreter.Display);
+        
         try
         {
             while (!Raylib.WindowShouldClose())
             {
+                var fps = Raylib.GetFPS();
+                
+                for (byte i = 0; i < _keypadKeys.Length; i++)
+                {
+                    var key = _keypadKeys[i];
+                    if (Raylib.IsKeyPressed(key))
+                        interpreter.Keypad.SetKey(i, true);
+                    else if (Raylib.IsKeyReleased(key))
+                        interpreter.Keypad.SetKey(i, false);
+                }
+
+                interpreter.Clock();
+                
                 Raylib.BeginDrawing();
                 Raylib.ClearBackground(new Color(32, 32, 32));
+                
+                gameScreen.Draw();
                 
                 rlImGui.Begin();
                 
                 //ImGui.ShowDemoWindow();
                 
                 rlImGui.End();
+                
+                Raylib.DrawText($"FPS: {fps}", 6, 6, 24, Color.RayWhite);
                 
                 Raylib.EndDrawing();
             }
@@ -61,6 +94,7 @@ public static class Program
         }
         finally
         {
+            gameScreen.Dispose();
             rlImGui.Shutdown();
             Raylib.CloseWindow();
         }
